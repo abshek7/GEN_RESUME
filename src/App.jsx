@@ -1,18 +1,42 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import { Button } from './components/ui/button'
+import { useState, useEffect } from 'react';
+import { Navigate, Outlet } from 'react-router-dom';
+import { auth } from './config/firebase';  
+import { onAuthStateChanged } from 'firebase/auth';
+import Header from './components/custom/Header';
+import { Toaster } from './components/ui/sonner';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [user, setUser] = useState(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+   
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+      setIsLoaded(true);
+    });
+
+ 
+    return () => unsubscribe();
+  }, []);
+
+ 
+  if (!isLoaded) {
+    return <div>Loading...</div>;  
+  }
+
+ 
+  if (!user) {
+    return <Navigate to="/auth/sign-in" />;
+  }
 
   return (
     <>
-      Dont stop coding! punakalu loading...
-     <Button>TRY</Button>
+      <Header />
+      <Outlet />
+      <Toaster />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
